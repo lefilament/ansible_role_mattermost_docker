@@ -1,0 +1,56 @@
+version: "2.1"
+services:
+    backup_mattermost:
+        build:
+            context: .
+            dockerfile: Dockerfile-postgres
+        image: filament/duplicity:postgres
+        hostname: backup-mattermost
+        domainname: "{{ mm_url }}"
+        environment:
+            DST: "swift://mattermost_{{ inventory_hostname|lower }}"
+            PGDATABASE: "{{ mm_db_name }}"
+            PGPASSWORD: "{{ mm_db_pass }}"
+            PGUSER: "{{ mm_db_user }}"
+            PASSPHRASE: "{{ mm_db_pass }}"
+            SWIFT_USERNAME: "{{ swift_cloud_username }}"
+            SWIFT_PASSWORD: "{{ swift_cloud_password }}"
+            SWIFT_AUTHURL: "{{ swift_cloud_authurl }}"
+            SWIFT_AUTHVERSION: {{ swift_cloud_authversion }}
+            SWIFT_TENANTNAME: "{{ swift_cloud_tenantname }}"
+            SWIFT_TENANTID: "{{ swift_cloud_tenantid }}"
+            SWIFT_REGIONNAME: "{{ swift_cloud_regionname }}"
+            JOB_300_WHAT: "backup --full-if-older-than 1W"
+            JOB_301_WHAT: "dup remove-all-inc-of-but-n-full 3 --force $$DST $$@"
+            JOB_301_WHEN: "daily"
+            JOB_302_WHAT: "dup remove-all-but-n-full 3 --force $$DST $$@"
+            JOB_302_WHEN: "daily"
+        volumes:
+            - mattermost_config:/mnt/backup/src/config:z
+            - mattermost_data:/mnt/backup/src/data:z
+            - mattermost_plugins:/mnt/backup/src/plugins:z
+            - mattermost_client-plugins:/mnt/backup/src/client-plugins:z
+        networks:
+            - mattermost_default
+            - public
+        command:
+            - /etc/periodic/daily/jobrunner
+
+networks:
+    mattermost_default:
+        driver_opts:
+            encrypted: 1
+        external: true
+    public:
+        driver_opts:
+            encrypted: 1
+
+volumes:
+    mattermost_config:
+        external: true
+    mattermost_data:
+        external: true
+    mattermost_plugins:
+        external: true
+    mattermost_client-plugins:
+        external: true

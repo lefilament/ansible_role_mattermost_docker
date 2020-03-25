@@ -1,0 +1,59 @@
+---
+
+- name: create Tuleap docker structure on server in /home/docker/tuleap
+  file:
+    name: /home/docker/mattermost/app
+    state: directory
+    owner: root
+    group: root
+
+
+- name: get Dockerfile for Mattermost from GitHub
+  get_url:
+    url: https://raw.githubusercontent.com/mattermost/mattermost-docker/master/app/Dockerfile
+    dest: /home/docker/mattermost/app/Dockerfile
+    mode: 0644
+
+- name: get entrypoint for Mattermost from GitHub
+  get_url:
+    url: https://raw.githubusercontent.com/mattermost/mattermost-docker/master/app/entrypoint.sh
+    dest: /home/docker/mattermost/app/entrypoint.sh
+    mode: 0555
+
+## Install Mattermost docker
+- name: Install mattermost docker
+  template:
+    src: mattermost.yaml.j2
+    dest: /home/docker/mattermost/docker-compose.yaml
+    owner: root
+    group: root
+    mode: 0400
+  notify: 
+    - start mattermost docker
+
+## Backup Mattermost section
+- name: Install Mattermost backup compose file
+  template:
+    src: backup.yaml.j2
+    dest: /home/docker/backups/backup-mattermost.yaml
+    owner: root
+    group: root
+    mode: 0400
+  when: inventory_hostname in groups['maintenance_contract']
+
+- name: Copy docker file for mysql duplicity
+  copy:
+    src: ../docker_odoo/files/Dockerfile-backup
+    dest: /home/docker/backups/Dockerfile-postgres
+    owner: root
+    group: root
+    mode: 0644
+  when: inventory_hostname in groups['maintenance_contract']
+
+- name: add cron job to run backup every day
+  cron:
+    name: backup mattermost
+    minute: 33
+    hour: 4
+    job: /usr/local/bin/docker-compose -f /home/docker/backups/backup-mattermost.yaml run --rm backup_mattermost 
+  when: inventory_hostname in groups['maintenance_contract']

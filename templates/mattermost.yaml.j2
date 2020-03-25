@@ -1,0 +1,91 @@
+version: "3"
+
+services:
+    smtp:
+{% if mailname is defined %}
+        image: tecnativa/postfix-relay
+        volumes:
+            - smtp:/var/spool/postfix
+        networks:
+            email_proxy:
+        environment:
+            MAILNAME: "{{ mailname }}"
+            MAIL_RELAY_HOST: "{{ mailserver }}"
+            MAIL_RELAY_PORT: "{{ smtpport }}"
+            MAIL_RELAY_USER: "{{ smtpuser }}"
+            MAIL_RELAY_PASS: "{{ smtppass }}"
+            MAIL_CANONICAL_DOMAINS: "{{ mailname }}"
+            MAIL_NON_CANONICAL_DEFAULT: "{{ mailname }}"
+        container_name: mattermost_smtp
+        restart: unless-stopped
+{% endif %}
+
+    db:
+        image: postgres
+        container_name: mattermost_db
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: {{ mm_db_name }}
+            POSTGRES_USER: {{ mm_db_user }}
+            POSTGRES_PASSWORD: {{ mm_db_pass }}
+        volumes:
+            - db:/var/lib/postgresql/data:z
+
+    mattermost:
+        build:
+            context: app
+            args:
+                edition: team
+        restart: unless-stopped
+        container_name: mattermost
+        depends_on:
+            - db
+        networks:
+            default:
+            inverseproxy_shared:
+            email_proxy:
+        volumes:
+            - config:/mattermost/config:z
+            - data:/mattermost/data:z
+            - logs:/mattermost/logs:z
+            - plugins:/mattermost/plugins:z
+            - client-plugins:/mattermost/client/plugins:z
+        environment:
+            MM_USERNAME: {{ mm_db_user }}
+            MM_PASSWORD: {{ mm_db_pass }}
+            MM_DBNAME: {{ mm_db_name }}
+            MM_SQLSETTINGS_DATASOURCE: postgres://{{ mm_db_user }}:{{ mm_db_pass }}@db:5432/{{ mm_db_name }}?sslmode=disable&connect_timeout=10
+        labels:
+            traefik.docker.network: "inverseproxy_shared"
+            traefik.enable: "true"
+            traefik.http.routers.mattermost-unsec.entrypoints: "http"
+            traefik.http.routers.mattermost-unsec.middlewares: "https-redirect@file"
+            traefik.http.routers.mattermost-unsec.rule: "Host(`{{ mm_url }}`)"
+            traefik.http.routers.mattermost.entrypoints: "https"
+            traefik.http.routers.mattermost.middlewares: "security-headers@file"
+            traefik.http.routers.mattermost.rule: "Host(`{{ mm_url }}`)"
+            traefik.http.routers.mattermost.service: "mattermost"
+            traefik.http.routers.mattermost.tls: "true"
+            traefik.http.routers.mattermost.tls.certresolver: "le"
+            traefik.http.routers.mattermost.tls.options: "default@file"
+            traefik.http.services.mattermost.loadbalancer.server.port: "8000"
+
+networks:
+    default:
+        internal: true
+        driver_opts:
+            encrypted: 1
+    inverseproxy_shared:
+        external: true
+    email_proxy:
+        driver_opts:
+            encrypted: 1
+
+volumes:
+    client-plugins:
+    config:
+    db:
+    data:
+    logs:
+    plugins:
+    smtp:
