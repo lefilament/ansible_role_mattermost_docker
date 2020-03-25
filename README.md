@@ -19,8 +19,8 @@ ansible_ssh_sudo_pass:
 # Server SSHD port
 ansible_ssh_port: 
 
-## Tuleap configuration
-# Tuleap URL
+## Mattermost configuration
+# Mattermost URL
 mm_url:
 # Mattermost DB
 mm_db_name: 
