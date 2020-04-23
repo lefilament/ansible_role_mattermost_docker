@@ -56,18 +56,9 @@ services:
             MM_DBNAME: {{ mm_db_name }}
             MM_SQLSETTINGS_DATASOURCE: postgres://{{ mm_db_user }}:{{ mm_db_pass }}@db:5432/{{ mm_db_name }}?sslmode=disable&connect_timeout=10
         labels:
-            traefik.docker.network: "inverseproxy_shared"
             traefik.enable: "true"
-            traefik.http.routers.mattermost-unsec.entrypoints: "http"
-            traefik.http.routers.mattermost-unsec.middlewares: "https-redirect@file"
-            traefik.http.routers.mattermost-unsec.rule: "Host(`{{ mm_url }}`)"
-            traefik.http.routers.mattermost.entrypoints: "https"
-            traefik.http.routers.mattermost.middlewares: "security-headers@file"
             traefik.http.routers.mattermost.rule: "Host(`{{ mm_url }}`)"
             traefik.http.routers.mattermost.service: "mattermost"
-            traefik.http.routers.mattermost.tls: "true"
-            traefik.http.routers.mattermost.tls.certresolver: "le"
-            traefik.http.routers.mattermost.tls.options: "default@file"
             traefik.http.services.mattermost.loadbalancer.server.port: "8000"
 
 networks:
