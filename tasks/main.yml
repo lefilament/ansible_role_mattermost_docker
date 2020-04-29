@@ -7,7 +7,6 @@
     owner: root
     group: root
 
-
 - name: get Dockerfile for Mattermost from GitHub
   get_url:
     url: https://raw.githubusercontent.com/mattermost/mattermost-docker/master/app/Dockerfile
@@ -41,7 +40,7 @@
     mode: 0400
   when: inventory_hostname in groups['maintenance_contract']
 
-- name: Copy docker file for mysql duplicity
+- name: Copy docker file for postgres duplicity
   copy:
     src: ../docker_odoo/files/Dockerfile-backup
     dest: /home/docker/backups/Dockerfile-postgres
