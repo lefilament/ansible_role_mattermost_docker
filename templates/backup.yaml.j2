@@ -1,29 +1,25 @@
 version: "2.1"
 services:
     backup_mattermost:
-        build:
-            context: .
-            dockerfile: Dockerfile-postgres
-        image: filament/duplicity:postgres
+        image: tecnativa/duplicity:postgres
         hostname: backup-mattermost
-        domainname: "{{ mm_url }}"
         environment:
             DST: "swift://mattermost_{{ inventory_hostname|lower }}"
             PGDATABASE: "{{ mm_db_name }}"
             PGPASSWORD: "{{ mm_db_pass }}"
             PGUSER: "{{ mm_db_user }}"
             PASSPHRASE: "{{ mm_db_pass }}"
-            SWIFT_USERNAME: "{{ swift_username }}"
-            SWIFT_PASSWORD: "{{ swift_password }}"
-            SWIFT_AUTHURL: "{{ swift_authurl }}"
-            SWIFT_AUTHVERSION: {{ swift_authversion }}
-            SWIFT_TENANTNAME: "{{ swift_tenantname }}"
-            SWIFT_TENANTID: "{{ swift_tenantid }}"
-            SWIFT_REGIONNAME: "{{ swift_regionname }}"
-            JOB_300_WHAT: "backup --full-if-older-than 6D"
-            JOB_301_WHAT: "dup remove-all-inc-of-but-n-full 3 --force $$DST $$@"
+            SWIFT_USERNAME: "{{ swift_odoo_username }}"
+            SWIFT_PASSWORD: "{{ swift_odoo_password }}"
+            SWIFT_AUTHURL: "{{ swift_odoo_authurl }}"
+            SWIFT_AUTHVERSION: {{ swift_odoo_authversion }}
+            SWIFT_TENANTNAME: "{{ swift_odoo_tenantname }}"
+            SWIFT_TENANTID: "{{ swift_odoo_tenantid }}"
+            SWIFT_REGIONNAME: "{{ swift_odoo_regionname }}"
+            JOB_300_WHAT: "backup --full-if-older-than 7D"
+            JOB_301_WHAT: "dup remove-all-inc-of-but-n-full 1 --force $$DST $$@"
             JOB_301_WHEN: "daily"
-            JOB_302_WHAT: "dup remove-all-but-n-full 3 --force $$DST $$@"
+            JOB_302_WHAT: "dup remove-all-but-n-full 4 --force $$DST $$@"
             JOB_302_WHEN: "daily"
         volumes:
             - mattermost_config:/mnt/backup/src/config:z
@@ -38,8 +34,6 @@ services:
 
 networks:
     mattermost_default:
-        driver_opts:
-            encrypted: 1
         external: true
     public:
         driver_opts:

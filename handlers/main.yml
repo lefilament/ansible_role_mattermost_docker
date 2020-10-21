@@ -1,7 +1,7 @@
 ---
 
 - name: start mattermost docker
-  docker_service:
+  docker_compose:
     project_src: /home/docker/mattermost
   async: 120
   poll: 10

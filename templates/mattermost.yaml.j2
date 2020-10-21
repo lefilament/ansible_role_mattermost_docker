@@ -36,6 +36,7 @@ services:
             context: app
             args:
                 edition: team
+        image: filament_mattermost:latest
         restart: unless-stopped
         container_name: mattermost
         depends_on:

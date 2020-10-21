@@ -11,13 +11,13 @@
   get_url:
     url: https://raw.githubusercontent.com/mattermost/mattermost-docker/master/app/Dockerfile
     dest: /home/docker/mattermost/app/Dockerfile
-    mode: 0644
+    mode: '0644'
 
 - name: get entrypoint for Mattermost from GitHub
   get_url:
     url: https://raw.githubusercontent.com/mattermost/mattermost-docker/master/app/entrypoint.sh
     dest: /home/docker/mattermost/app/entrypoint.sh
-    mode: 0555
+    mode: '0555'
 
 ## Install Mattermost docker
 - name: Install mattermost docker
@@ -26,7 +26,7 @@
     dest: /home/docker/mattermost/docker-compose.yaml
     owner: root
     group: root
-    mode: 0400
+    mode: '0400'
   notify: 
     - start mattermost docker
 
@@ -37,22 +37,13 @@
     dest: /home/docker/backups/backup-mattermost.yaml
     owner: root
     group: root
-    mode: 0400
-  when: inventory_hostname in groups['maintenance_contract']
-
-- name: Copy docker file for postgres duplicity
-  copy:
-    src: ../docker_odoo/files/Dockerfile-backup
-    dest: /home/docker/backups/Dockerfile-postgres
-    owner: root
-    group: root
-    mode: 0644
+    mode: '0400'
   when: inventory_hostname in groups['maintenance_contract']
 
 - name: add cron job to run backup every day
   cron:
     name: backup mattermost
-    minute: 33
-    hour: 4
+    minute: "33"
+    hour: "4"
     job: /usr/local/bin/docker-compose -f /home/docker/backups/backup-mattermost.yaml run --rm backup_mattermost 
   when: inventory_hostname in groups['maintenance_contract']
