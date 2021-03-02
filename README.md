@@ -21,7 +21,7 @@ ansible_become_pass:
 ansible_port: 
 
 ## Mattermost configuration
-# Mattermost URL
+# Mattermost URL (only sub.domain without https:// in front)
 mm_url:
 # Mattermost DB
 mm_db_name: 
