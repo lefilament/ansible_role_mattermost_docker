@@ -21,7 +21,7 @@ services:
 {% endif %}
 
     db:
-        image: postgres
+        image: postgres:12
         container_name: mattermost_db
         restart: unless-stopped
         environment:
