@@ -1,53 +1,60 @@
-# Ansible role to deploy Mattermost server docker
+docker_mattermost
+=================
 
-[![](https://img.shields.io/badge/licence-AGPL--3-blue.svg)](http://www.gnu.org/licenses/agpl "License: AGPL-3")
+This role deploys Mattermost on Docker. This role is not maintained anymore.
+The main repo for this role is on [Le Filament GitLab](https://sources.le-filament.com/lefilament/ansible-roles/docker_drawio.git)
 
-This role allows you to deploy Mattermost docker with associated Postgres DB and postfix relay.
-This role also embeds automatic backups towards swift storage every day (with one full backup every week and retention of 3 full backups) using duplicity based on [Tecnativa docker image](https://hub.docker.com/r/tecnativa/duplicity). See [Ansible docker odoo role](https://github.com/lefilament/ansible_role_odoo_docker/blob/master/files/Dockerfile-backup) for building that docker image.
+Requirements
+------------
 
-Prior to running this role, you would need to have docker installed on your server and a traefik proxy (which is the purpose of [this role](https://github.com/lefilament/ansible_role_docker_server))
+None
 
-In order to use this role, you would need to define the following variables for your server (in hostvars for instance) - Only the names of the variables are provided below (not the values) for these used by this role to properly configure everything, you may copy this file directly in hostvars and set the variable although we could only encourage you to use an Ansible vault and refer vault variables from there:
+Role Variables
+--------------
 
-```json
-## Ansible configuration for connecting to remote host
-# IP address of server
-ansible_host: 
-# User to be used on server (to which Ansible server public key has been provided)
-ansible_user: 
-# Encryped password (for elevating rights / sudo)
-ansible_become_pass: 
-# Server SSHD port
-ansible_port: 
-
-## Mattermost configuration
-# Mattermost URL (only sub.domain without https:// in front)
-mm_url:
-# Mattermost DB
-mm_db_name: 
-mm_db_user: 
-mm_db_pass: 
-
-## Backup Swift Storage configuration
-swift_username:
-swift_password:
-swift_authurl:
-swift_authversion:
-swift_tenantname:
-swift_tenantid:
-swift_regionname:
-
-```
-
-# Credits
-
-## Contributors
-
-* Remi Cazenave <remi-filament>
+Variables from default directory :
+* mm_url: URL on which Mattermost will be listening
+* mm_db_name: Database name
+* mm_db_user: Database user
+* mm_db_pass: Database password
+* Mail configuration (optional, if set, a postfix proxy will be deployed, otherwise a mailhog instance will be deployed for blocking e-mails)
+  * mailname: domain to which the users belong to
+  * mailserver: SMTP server to use for sending e-mails (defaults to smtp.{{ domain }})
+  * smtpport: SMTP server port (defaults to 465)
+  * smtpuser: SMTP username (defaults to smtpuser)
+  * smtppass: SMTP user password (defaults to veryUnsecurePassToBeModified)
+* Backups (for backups to be deployed, host needs to be in maintenance_contract group) :
+  * swift parameters for 2 object storage instances where backups should be pushed daily
+  * mm_backup_pass : Passphrase for encryption of backups
 
 
-## Maintainer
+Dependencies
+------------
 
-[![](https://le-filament.com/img/logo-lefilament.png)](https://le-filament.com "Le Filament")
+This role requires the following Ansible collection :
+* community.docker
 
-This role is maintained by Le Filament
+This Docker role supposes that Traefik is deployed as an inverseproxy in front of the deployed Dockers.
+The following role is used by Le Filament for deploying Traefik : docker_server (https://sources.le-filament.com/lefilament/ansible-roles/docker_server)
+
+Example Playbook
+----------------
+
+Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+
+    - hosts: servers
+      roles:
+         - { role: docker_mattermost }
+      vars:
+         - { mm_url: "mattermost.example.org" }
+         - { mm_db_pass: "veryUnsecurePassToBeModified" }
+
+License
+-------
+
+AGPL-3
+
+Author Information
+------------------
+
+Le Filament (https://le-filament.com)

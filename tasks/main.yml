@@ -6,6 +6,7 @@
     state: directory
     owner: root
     group: root
+    mode: '0755'
 
 - name: get Dockerfile for Mattermost from GitHub
   get_url:
@@ -27,7 +28,7 @@
     owner: root
     group: root
     mode: '0400'
-  notify: 
+  notify:
     - start mattermost docker
 
 ## Backup Mattermost section
@@ -40,10 +41,27 @@
     mode: '0400'
   when: inventory_hostname in groups['maintenance_contract']
 
+- name: Install Mattermost backup2 compose file
+  template:
+    src: backup2.yaml.j2
+    dest: /home/docker/backups/backup2-mattermost.yaml
+    owner: root
+    group: root
+    mode: '0400'
+  when: inventory_hostname in groups['maintenance_contract']
+
 - name: add cron job to run backup every day
   cron:
     name: backup mattermost
     minute: "33"
     hour: "4"
-    job: /usr/local/bin/docker-compose -f /home/docker/backups/backup-mattermost.yaml run --rm backup_mattermost 
+    job: /usr/local/bin/docker-compose -f /home/docker/backups/backup-mattermost.yaml run --rm backup_mattermost
+  when: inventory_hostname in groups['maintenance_contract']
+
+- name: add cron job to run backup2 every day
+  cron:
+    name: backup2 mattermost
+    minute: "10"
+    hour: "8"
+    job: /usr/local/bin/docker-compose -f /home/docker/backups/backup2-mattermost.yaml run --rm backup_mattermost
   when: inventory_hostname in groups['maintenance_contract']
