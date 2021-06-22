@@ -2,7 +2,7 @@ docker_mattermost
 =================
 
 This role deploys Mattermost on Docker. This role is not maintained anymore.
-The main repo for this role is on [Le Filament GitLab](https://sources.le-filament.com/lefilament/ansible-roles/docker_drawio.git)
+The main repo for this role is on [Le Filament GitLab](https://sources.le-filament.com/lefilament/ansible-roles/docker_mattermost.git)
 
 Requirements
 ------------
