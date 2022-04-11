@@ -2,7 +2,7 @@ version: "2.1"
 services:
     backup_mattermost:
         image: tecnativa/duplicity:postgres
-        hostname: backup-mattermost
+        hostname: {{ inventory_hostname_short | lower | regex_replace('_','') }}-mattermost
         environment:
             DST: "swift://mattermost_{{ inventory_hostname|lower }}"
             PGDATABASE: "{{ mm_db_name }}"
@@ -20,6 +20,7 @@ services:
             JOB_302_WHAT: "dup remove-all-but-n-full 5 --force $$DST $$@"
             JOB_302_WHEN: "daily"
         volumes:
+            - mattermost_backup2_cache:/root/.cache/duplicity/
             - mattermost_config:/mnt/backup/src/config:z
             - mattermost_data:/mnt/backup/src/data:z
             - mattermost_plugins:/mnt/backup/src/plugins:z
@@ -38,6 +39,7 @@ networks:
             encrypted: 1
 
 volumes:
+    mattermost_backup2_cache:
     mattermost_config:
         external: true
     mattermost_data:
